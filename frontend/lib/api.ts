@@ -10,12 +10,16 @@ async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  // Always use full worker URL
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://applyo-worker.applyo.workers.dev';
+  // Use relative URL on client (proxied), full URL on server
+  const baseUrl = typeof window !== 'undefined' 
+    ? '' 
+    : (process.env.NEXT_PUBLIC_API_URL || 'https://applyo-worker.applyo.workers.dev');
+    
   const url = `${baseUrl}${endpoint}`;
   console.log("fetching: ", url);
 
   const defaultOptions: RequestInit = {
+    credentials: 'include', // Include cookies for session management
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
