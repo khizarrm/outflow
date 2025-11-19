@@ -3,6 +3,7 @@
 import { Calendar, Home, Inbox, Search, Settings, User, LogOut, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
+import Image from "next/image"
 
 import {
   Sidebar,
@@ -65,6 +66,7 @@ export function AppSidebar() {
   // Get user display info - ensure we're working with strings
   const userName = session?.user?.name ? String(session.user.name) : 'Guest';
   const userEmail = session?.user?.email ? String(session.user.email) : 'guest@outreach.app';
+  const userImage = session?.user?.image ? String(session.user.image) : null;
   const isAnonymous = !session?.user?.email;
 
   return (
@@ -101,9 +103,20 @@ export function AppSidebar() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                <User className="size-4" />
-              </div>
+              {userImage ? (
+                <Image 
+                  src={userImage} 
+                  alt={userName}
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                  <User className="size-4" />
+                </div>
+              )}
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold">{userName}</span>
                 <span className="truncate text-xs font-normal text-muted-foreground">{isAnonymous ? 'Guest User' : userEmail}</span>
