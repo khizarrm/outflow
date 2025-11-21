@@ -37,7 +37,7 @@ async function apiFetch(url: string, options: RequestInit = {}) {
 // Agents API
 export const agentsApi = {
   orchestrator: async (params: { query: string }): Promise<OrchestratorResponse> => {
-    const response = await apiFetch('/api/orchestrator', {
+    const response = await apiFetch('/api/agents/orchestrator', {
       method: 'POST',
       body: JSON.stringify(params),
     });

@@ -11,6 +11,7 @@ import Orchestrator from "./agents/orchestrator";
 import { ProtectedEmailSendRoute } from "./endpoints/emailSend";
 import { Agent, AgentNamespace, getAgentByName, routeAgentRequest } from 'agents';
 import { z } from "zod";
+import { ProtectedTemplatesCreateRoute, ProtectedTemplatesListRoute, ProtectedTemplatesDeleteRoute, ProtectedTemplatesUpdateRoute } from "./endpoints/templates";
 
 
 interface Env {
@@ -699,6 +700,10 @@ openapi.post("/api/agents/peoplefinder", PeopleFinderRoute);
 openapi.post("/api/agents/emailfinder", EmailFinderRoute);
 openapi.post("/api/agents/orchestrator", OrchestratorRoute);
 openapi.post("/api/protected/email/send", ProtectedEmailSendRoute);
+openapi.post("/api/protected/templates", ProtectedTemplatesCreateRoute);
+openapi.get("/api/protected/templates", ProtectedTemplatesListRoute);
+openapi.delete("/api/protected/templates/:id", ProtectedTemplatesDeleteRoute);
+openapi.put("/api/protected/templates/:id", ProtectedTemplatesUpdateRoute);
 
 
 // ============= END DEMO API ROUTES =============
@@ -1102,7 +1107,7 @@ app.get("/protected", async c => {
         );
     }
 });
-  
+
 
 // Simple health check
 app.get("/health", c => {

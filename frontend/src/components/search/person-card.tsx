@@ -25,7 +25,7 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
   const [sendError, setSendError] = useState<string | null>(null);
 
   const hasEmail = person.emails && person.emails.length > 0;
-  const targetEmail = hasEmail ? person.emails[0] : null;
+  const targetEmail = person.emails?.[0] ?? null;
   
   const domain = targetEmail ? targetEmail.split('@')[1] : null;
   const companyUrl = domain ? `https://${domain}` : null;
@@ -64,12 +64,19 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
     >
         <div className="flex flex-col gap-4">
           {/* Header: Name and Badge */}
-          <div className="flex justify-between items-start gap-4">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-tight break-words hyphens-auto min-w-0">
+          <div className="flex items-start gap-3 min-w-0 w-full">
+            <h2 
+              className="text-xl sm:text-2xl md:text-3xl font-light tracking-tight flex-1 min-w-0"
+              style={{ 
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                hyphens: 'auto'
+              }}
+            >
               {person.name}
             </h2>
             {hasEmail && (
-              <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600 h-6 px-2 font-sans font-light tracking-wide shrink-0 whitespace-nowrap ml-2">
+              <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600 h-6 px-2 font-sans font-light tracking-wide shrink-0 whitespace-nowrap flex-shrink-0 mt-0.5">
                 <BadgeCheck className="w-3.5 h-3.5 mr-1.5" />
                 Verified
               </Badge>
@@ -79,22 +86,28 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
           {/* Info Section */}
           <div className="space-y-3 flex-grow">
             {person.role && (
-              <p className="text-xs sm:text-sm md:text-base font-sans font-light text-[#6a6a6a] leading-relaxed break-words">
+              <p 
+                className="text-xs sm:text-sm md:text-base font-sans font-light text-[#6a6a6a] leading-relaxed min-w-0"
+                style={{ 
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere'
+                }}
+              >
                 {person.role}
               </p>
             )}
 
             {/* Company Info Row */}
-            <div className="flex items-center gap-2 text-[#6a6a6a]">
+            <div className="flex items-center gap-2 text-[#6a6a6a] min-w-0">
               {companyUrl ? (
                 <a 
                   href={companyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-[#e8e8e8] transition-colors group min-w-0"
+                  className="flex items-center gap-2 hover:text-[#e8e8e8] transition-colors group min-w-0 flex-1"
                 >
                   {favicon ? (
-                    <div className="w-5 h-5 rounded bg-white/5 p-0.5 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-colors shrink-0">
+                    <div className="w-5 h-5 rounded bg-white/5 p-0.5 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-colors shrink-0 flex-shrink-0">
             <img
               src={favicon}
               alt={`${companyName} logo`}
@@ -105,16 +118,28 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
             />
                     </div>
                   ) : (
-                    <Building2 className="w-4 h-4 shrink-0" />
+                    <Building2 className="w-4 h-4 shrink-0 flex-shrink-0" />
                   )}
-                  <span className="text-xs sm:text-sm font-sans font-light tracking-wide underline decoration-white/20 hover:decoration-white/50 transition-all truncate">
+                  <span 
+                    className="text-xs sm:text-sm font-sans font-light tracking-wide underline decoration-white/20 hover:decoration-white/50 transition-all min-w-0"
+                    style={{ 
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere'
+                    }}
+                  >
                     {companyName || domain || 'Company Website'}
                   </span>
                 </a>
               ) : (
-                <div className="flex items-center gap-2 min-w-0">
-                  <Building2 className="w-4 h-4 shrink-0" />
-                  <span className="text-xs sm:text-sm font-sans font-light tracking-wide truncate">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Building2 className="w-4 h-4 shrink-0 flex-shrink-0" />
+                  <span 
+                    className="text-xs sm:text-sm font-sans font-light tracking-wide min-w-0"
+                    style={{ 
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere'
+                    }}
+                  >
                     {companyName}
                   </span>
                 </div>
