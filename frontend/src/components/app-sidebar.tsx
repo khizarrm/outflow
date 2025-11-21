@@ -106,6 +106,18 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          {showSignOut && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={handleSignOut}
+                tooltip="Sign out"
+                className="text-muted-foreground hover:text-destructive animate-in slide-in-from-bottom-2 fade-in duration-200"
+              >
+                <LogOut />
+                <span>Sign out</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
@@ -133,18 +145,6 @@ export function AppSidebar() {
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          {showSignOut && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={handleSignOut}
-                tooltip="Sign out"
-                className="text-muted-foreground hover:text-destructive animate-in slide-in-from-top-2 fade-in duration-200"
-              >
-                <LogOut />
-                <span>Sign out</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />

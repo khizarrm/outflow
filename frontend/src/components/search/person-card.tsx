@@ -1,13 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Check, BadgeCheck, X, Send, Mail, Building2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Check, BadgeCheck, X, Send, Mail, Building2, FileText, ChevronDown, Loader2 } from 'lucide-react';
 import type { OrchestratorPerson } from '@/lib/api';
 import { protectedApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PersonCardProps {
   person: OrchestratorPerson;
@@ -23,6 +29,37 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
   const [emailBody, setEmailBody] = useState('');
   const [sendSuccess, setSendSuccess] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string; subject: string; body: string }>>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+
+  useEffect(() => {
+    if (isComposing) {
+      setIsLoadingTemplates(true);
+      protectedApi.listTemplates()
+        .then(data => {
+          if (data.success && data.templates) {
+            setTemplates(data.templates);
+          }
+        })
+        .catch(err => console.error('Failed to load templates:', err))
+        .finally(() => setIsLoadingTemplates(false));
+    }
+  }, [isComposing]);
+
+  const handleTemplateSelect = (template: { subject: string; body: string }) => {
+    setEmailSubject(template.subject);
+    // Replace placeholder variables if needed (e.g., {{firstName}})
+    // For now, simple replacement
+    const firstName = person.name.split(' ')[0];
+    const company = companyName || 'your company';
+    
+    let body = template.body;
+    body = body.replace(/{{firstName}}/g, firstName);
+    body = body.replace(/{{company}}/g, company);
+    
+    setEmailBody(body);
+  };
 
   const hasEmail = person.emails && person.emails.length > 0;
   const targetEmail = person.emails?.[0] ?? null;
@@ -180,14 +217,48 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
               <h3 className="text-lg font-medium text-white font-sans font-light tracking-wide">
                 Send Email to {person.name}
               </h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-400 hover:text-white"
-                onClick={() => setIsComposing(false)}
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1 bg-transparent border-[#2a2a2a] text-gray-400 hover:text-white hover:bg-[#2a2a2a]">
+                      <FileText className="w-3.5 h-3.5" />
+                      <span className="text-xs">Templates</span>
+                      <ChevronDown className="w-3 h-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-[#151515] border-[#2a2a2a] text-white">
+                    {isLoadingTemplates ? (
+                      <div className="flex items-center justify-center p-2 text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        <span className="text-xs">Loading...</span>
+                      </div>
+                    ) : templates.length === 0 ? (
+                      <div className="p-2 text-xs text-gray-500 text-center">
+                        No templates found
+                      </div>
+                    ) : (
+                      templates.map(template => (
+                        <DropdownMenuItem 
+                          key={template.id} 
+                          onClick={() => handleTemplateSelect(template)}
+                          className="text-sm hover:bg-[#2a2a2a] cursor-pointer"
+                        >
+                          <span className="truncate">{template.name}</span>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-white"
+                  onClick={() => setIsComposing(false)}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
 
             {/* Body */}
