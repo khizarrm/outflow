@@ -44,3 +44,13 @@ new_sqlite_classes = ["Prospects", "PeopleFinder", "EmailFinder"]
 tag = "v2"
 new_sqlite_classes = ["Orchestrator"]
 
+[[vectorize]]
+binding = "COMPANY_VECTORS"
+index_name = "company-vectors"
+
+[[vectorize]]
+binding = "EMPLOYEE_VECTORS"
+index_name = "employee-vectors"
+
+[ai]
+binding = "AI"

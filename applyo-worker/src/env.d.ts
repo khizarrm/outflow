@@ -1,4 +1,4 @@
-import type { D1Database, KVNamespace } from "@cloudflare/workers-types";
+import type { D1Database, KVNamespace, VectorizeIndex, Ai } from "@cloudflare/workers-types";
 import type { AgentNamespace } from "agents";
 import type Prospects from "./agents/prospector";
 import type PeopleFinder from "./agents/peoplefinder";
@@ -8,6 +8,9 @@ import type Orchestrator from "./agents/orchestrator";
 export interface CloudflareBindings {
     DB: D1Database;
     KV?: KVNamespace;
+    COMPANY_VECTORS: VectorizeIndex;
+    EMPLOYEE_VECTORS: VectorizeIndex;
+    AI: Ai;
     Prospects: AgentNamespace<Prospects>;
     PeopleFinder: AgentNamespace<PeopleFinder>;
     EmailFinder: AgentNamespace<EmailFinder>;
