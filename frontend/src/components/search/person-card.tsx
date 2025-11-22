@@ -29,6 +29,7 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
   const [emailBody, setEmailBody] = useState('');
   const [sendSuccess, setSendSuccess] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [faviconError, setFaviconError] = useState(false);
 
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; subject: string; body: string }>>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
@@ -81,6 +82,9 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
   
   const domain = targetEmail ? targetEmail.split('@')[1] : null;
   const companyUrl = domain ? `https://${domain}` : null;
+  
+  // Generate favicon URL from domain if not provided as prop
+  const faviconUrl = favicon || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null);
 
   const handleSendEmail = async () => {
     if (!targetEmail) return;
@@ -158,16 +162,14 @@ export function PersonCard({ person, favicon, companyName, index }: PersonCardPr
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-[#e8e8e8] transition-colors group min-w-0 flex-1"
                 >
-                  {favicon ? (
+                  {faviconUrl && !faviconError ? (
                     <div className="w-5 h-5 rounded bg-white/5 p-0.5 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-colors shrink-0 flex-shrink-0">
-            <img
-              src={favicon}
-              alt={`${companyName} logo`}
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+                      <img
+                        src={faviconUrl}
+                        alt={`${companyName} logo`}
+                        className="w-full h-full object-contain"
+                        onError={() => setFaviconError(true)}
+                      />
                     </div>
                   ) : (
                     <Building2 className="w-4 h-4 shrink-0 flex-shrink-0" />

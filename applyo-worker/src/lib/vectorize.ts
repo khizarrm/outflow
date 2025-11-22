@@ -14,6 +14,11 @@ export class VectorizeHandler {
     async populateCompanies(offset: number = 0, limit: number = 50) {
         try {
             const db = drizzle(this.env.DB, { schema });
+            
+            // Get total count first
+            const totalCountResult = await db.select({ count: sql<number>`count(*)` }).from(companyProfiles).get();
+            const totalCount = totalCountResult?.count || 0;
+            
             const companies = await db.select()
                 .from(companyProfiles)
                 .limit(limit)
@@ -25,6 +30,10 @@ export class VectorizeHandler {
                     success: false,
                     message: 'No companies found in this batch',
                     processed: 0,
+                    total: totalCount,
+                    processedSoFar: offset,
+                    remaining: totalCount - offset,
+                    progress: `${offset} out of ${totalCount}`,
                     hasMore: false,
                     nextOffset: offset
                 };
@@ -40,7 +49,7 @@ export class VectorizeHandler {
 
                 const batchPromises = batch.map(async (company) => {
                     try {
-                        const textToEmbed = `${company.companyName} ${company.description || ''} ${company.techStack || ''} ${company.industry || ''}`;
+                        const textToEmbed = `${company.companyName} ${company.website || ''} ${company.description || ''} ${company.techStack || ''} ${company.industry || ''}`;
 
                         const embedding = await this.env.AI.run('@cf/baai/bge-base-en-v1.5', {
                             text: textToEmbed
@@ -81,12 +90,18 @@ export class VectorizeHandler {
 
             const hasMore = companies.length === limit;
             const nextOffset = offset + totalInserted;
+            const processedSoFar = offset + totalInserted;
+            const remaining = totalCount - processedSoFar;
 
             if (totalInserted > 0) {
                 return {
                     success: true,
-                    message: `Processed ${totalInserted} company vectors (offset ${offset})`,
+                    message: `Processed ${totalInserted} company vectors: ${processedSoFar} out of ${totalCount}`,
                     processed: totalInserted,
+                    total: totalCount,
+                    processedSoFar: processedSoFar,
+                    remaining: remaining,
+                    progress: `${processedSoFar} out of ${totalCount}`,
                     hasMore,
                     nextOffset,
                     errors: errors.length > 0 ? errors : undefined,
@@ -97,6 +112,10 @@ export class VectorizeHandler {
                     success: false,
                     message: "No vectors generated",
                     processed: 0,
+                    total: totalCount,
+                    processedSoFar: offset,
+                    remaining: totalCount - offset,
+                    progress: `${offset} out of ${totalCount}`,
                     hasMore: false,
                     nextOffset: offset,
                     errors
@@ -111,6 +130,10 @@ export class VectorizeHandler {
     async populateEmployees(offset: number = 0, limit: number = 50) {
         try {
             const db = drizzle(this.env.DB, { schema });
+
+            // Get total count first
+            const totalCountResult = await db.select({ count: sql<number>`count(*)` }).from(employees).get();
+            const totalCount = totalCountResult?.count || 0;
 
             const result = await db.select({
                 employee: employees,
@@ -127,6 +150,10 @@ export class VectorizeHandler {
                     success: false,
                     message: 'No employees found in this batch',
                     processed: 0,
+                    total: totalCount,
+                    processedSoFar: offset,
+                    remaining: totalCount - offset,
+                    progress: `${offset} out of ${totalCount}`,
                     hasMore: false,
                     nextOffset: offset
                 };
@@ -168,13 +195,19 @@ export class VectorizeHandler {
 
             const hasMore = result.length === limit;
             const nextOffset = offset + vectors.length;
+            const processedSoFar = offset + vectors.length;
+            const remaining = totalCount - processedSoFar;
 
             if (vectors.length > 0) {
                 const inserted = await this.env.EMPLOYEE_VECTORS.insert(vectors);
                 return {
                     success: true,
-                    message: `Processed ${vectors.length} employee vectors (offset ${offset})`,
+                    message: `Processed ${vectors.length} employee vectors: ${processedSoFar} out of ${totalCount}`,
                     processed: vectors.length,
+                    total: totalCount,
+                    processedSoFar: processedSoFar,
+                    remaining: remaining,
+                    progress: `${processedSoFar} out of ${totalCount}`,
                     hasMore,
                     nextOffset,
                     errors: errors.length > 0 ? errors : undefined,
@@ -185,6 +218,10 @@ export class VectorizeHandler {
                     success: false,
                     message: "No vectors generated",
                     processed: 0,
+                    total: totalCount,
+                    processedSoFar: offset,
+                    remaining: totalCount - offset,
+                    progress: `${offset} out of ${totalCount}`,
                     hasMore: false,
                     nextOffset: offset,
                     errors
@@ -267,7 +304,7 @@ export class VectorizeHandler {
                 return { success: false, error: 'Company not found' };
             }
 
-            const textToEmbed = `${company.companyName} ${company.description || ''} ${company.techStack || ''} ${company.industry || ''}`;
+            const textToEmbed = `${company.companyName} ${company.website || ''} ${company.description || ''} ${company.techStack || ''} ${company.industry || ''}`;
             const embedding = await this.env.AI.run('@cf/baai/bge-base-en-v1.5', {
                 text: textToEmbed
             }) as { data: number[][] };

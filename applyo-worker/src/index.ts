@@ -15,6 +15,7 @@ import { z } from "zod";
 import { ProtectedTemplatesCreateRoute, ProtectedTemplatesListRoute, ProtectedTemplatesDeleteRoute, ProtectedTemplatesUpdateRoute, ProtectedTemplateProcessRoute } from "./endpoints/templates";
 import { ProtectedCompaniesListRoute, ProtectedCompanyEmployeesRoute } from "./endpoints/companies";
 import { VectorizePopulateCompaniesRoute, VectorizePopulateEmployeesRoute, VectorizeSearchRoute, VectorizeStatsRoute, VectorizeUpdateCompanyRoute } from "./endpoints/vectorize";
+import { findExistingCompanyAndEmployees } from "./db/companies";
 
 
 interface Env {
@@ -40,7 +41,7 @@ app.use(
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "https://applyo-frontend.applyo.workers.dev",
-                "https://outreach-umber.vercel.app"
+                "https://try-outreach.vercel.app"
             ];
             return allowed.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin) ? origin : allowed[0];
         },
@@ -377,6 +378,52 @@ class OrchestratorRoute extends OpenAPIRoute {
       const env = c.env;
 
       const reqData = await this.getValidatedData<typeof this.schema>();
+      const query = reqData.body.query;
+      
+      // Check database first before calling orchestrator
+      try {
+        const existing = await findExistingCompanyAndEmployees(env.DB, query);
+        
+        if (existing && existing.employees.length > 0) {
+          // Format response to match orchestrator output
+          const people = existing.employees
+            .filter(emp => emp.email && emp.email.trim() !== "") // Only include employees with emails
+            .map(emp => ({
+              name: emp.employeeName,
+              role: emp.employeeTitle || null,
+              emails: emp.email ? [emp.email] : [],
+            }));
+          
+          if (people.length > 0) {
+            return new Response(
+              JSON.stringify({
+                company: existing.company.companyName,
+                website: existing.company.website || null,
+                description: existing.company.description || null,
+                techStack: existing.company.techStack || null,
+                industry: existing.company.industry || null,
+                yearFounded: existing.company.yearFounded || null,
+                headquarters: existing.company.headquarters || null,
+                revenue: existing.company.revenue || null,
+                funding: existing.company.funding || null,
+                employeeCountMin: existing.company.employeeCountMin || null,
+                employeeCountMax: existing.company.employeeCountMax || null,
+                people,
+                state: {},
+              }),
+              { 
+                headers: { "Content-Type": "application/json" },
+                status: 200,
+              }
+            );
+          }
+        }
+      } catch (dbError) {
+        // If DB check fails, continue to orchestrator
+        console.error("Error checking database:", dbError);
+      }
+
+      // If not found in DB, proceed with orchestrator
       const body = JSON.stringify(reqData.body);
 
       // manually call the agent

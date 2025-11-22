@@ -2,8 +2,6 @@ import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import { drizzle } from "drizzle-orm/d1";
 import { schema } from "../db";
-import { eq } from "drizzle-orm";
-import { accounts } from "../db/auth.schema";
 
 export class ProtectedEmailSendRoute extends OpenAPIRoute {
     schema = {

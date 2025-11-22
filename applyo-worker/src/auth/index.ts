@@ -16,7 +16,8 @@ function createAuth(env?: CloudflareBindings, cf?: IncomingRequestCfProperties) 
             "http://localhost:3000",
             "http://localhost:3001",
             "https://applyo-worker.applyo.workers.dev",
-            "https://applyo-frontend.applyo.workers.dev"
+            "https://applyo-frontend.applyo.workers.dev",
+            "https://try-outreach.vercel.app"
         ],
         ...withCloudflare(
             {

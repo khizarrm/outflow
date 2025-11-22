@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { users } from "./auth.schema";
 
-// This maps to your EXISTING 'templates' table
 export const templates = sqliteTable("templates", {
   id: text("id").primaryKey(),
   userId: text("user_id")

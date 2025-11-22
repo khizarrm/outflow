@@ -1,7 +1,7 @@
 import { Agent } from "agents";
 import { normalizeUrl } from "../lib/utils";
 import type { CloudflareBindings } from "../env.d";
-import { tools } from "../lib/tools";
+import { tools } from "../tools";
 import { openai } from "@ai-sdk/openai";
 import { generateText, tool, stepCountIs } from "ai";
 import { z } from "zod";

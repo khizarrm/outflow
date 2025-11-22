@@ -1,7 +1,7 @@
 import { Agent } from "agents";
 import { openai } from "@ai-sdk/openai"
 import { generateText, stepCountIs } from "ai";
-import { tools } from "../lib/tools";
+import { tools } from "../tools";
 
 class Prospects extends Agent {
   async onStart() {
