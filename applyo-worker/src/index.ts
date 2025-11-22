@@ -1181,9 +1181,11 @@ app.get("/health", c => {
 
 export default {
     async fetch(request, env, ctx) {
-      // First let Cloudflare handle any /agents/... requests automatically
-      const agentResponse = await routeAgentRequest(request, env)
-      if (agentResponse) return agentResponse;
+      const url = new URL(request.url);
+      if (!url.pathname.startsWith('/api/')) {
+        const agentResponse = await routeAgentRequest(request, env);
+        if (agentResponse) return agentResponse;
+      }
       return openapi.fetch(request, env, ctx);
     }
   };

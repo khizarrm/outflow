@@ -1,6 +1,6 @@
 import { Agent } from "agents";
 import { openai } from "@ai-sdk/openai";
-import { streamText, tool } from "ai";
+import { generateText, tool, stepCountIs } from "ai";
 import { vectorizeSearch } from "../lib/tools";
 import type { CloudflareBindings } from "../env.d";
 
@@ -60,32 +60,51 @@ class FinderV2 extends Agent<CloudflareBindings> {
 - **For Broad Queries (e.g., "AI companies"):**
   - Keep all relevant results.
 
-**Phase 3: Synthesize Response**
+**Phase 3: Synthesize Response (CRITICAL - YOU MUST DO THIS)**
+After using the vectorizeSearch tool, you MUST generate a final markdown response that synthesizes your findings. Do not stop after calling the tool - you must provide a complete answer.
+
 - **Company Info:** Name, one-sentence description, location, tech stack.
 - **Emails/People:** consistently check "employees" array and list names + emails.
-- **Format:** Clean, concise, conversational. No formatting clutter.
+- **Format:** Clean, concise, conversational markdown. No formatting clutter.
+- **IMPORTANT:** After using any tools, you MUST write a complete markdown response summarizing your findings. Never stop without providing a final answer.
 
 User query: ${query}`;
 
     try {
-      const result = streamText({
+      const result = await generateText({
         model,
         tools,
         prompt,
-        toolChoice: "auto"
+        toolChoice: "auto",
+        stopWhen: stepCountIs(10)
       });
 
-      return result.toTextStreamResponse()
+      // Validate that we got a text response
+      if (!result.text || result.text.trim().length === 0) {
+        console.error("Empty response from AI model. Finish reason:", result.finishReason);
+        console.error("Result steps:", result.steps?.length);
+        return new Response(
+          "I apologize, but I wasn't able to generate a response. Please try again with a different query.",
+          {
+            status: 500,
+            headers: { "Content-Type": "text/plain" },
+          }
+        );
+      }
+
+      return new Response(
+        result.text,
+        {
+          headers: { "Content-Type": "text/markdown" },
+        }
+      );
     } catch (error) {
       console.error("Researcher agent error:", error);
       return new Response(
-        JSON.stringify({
-          error: "Failed to complete research",
-          errorMessage: error instanceof Error ? error.message : String(error),
-        }),
+        `Error: Failed to complete research. ${error instanceof Error ? error.message : String(error)}`,
         {
           status: 500,
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain" },
         }
       );
     }
